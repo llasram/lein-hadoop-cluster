@@ -17,12 +17,16 @@
       :out (.split ":") (->> (map #(.trim %)))
       vec))
 
+(def native-path
+  "Most common (Linux) path for native dependencies."
+  "/usr/lib/hadoop/lib/native")
+
 (def hadoop-cluster-profile
   (cond-> {:exclusions hadoop-dependencies
            :plugins '[[lein-extend-cp "0.1.0"]]
            :lein-extend-cp {:paths hadoop-classpaths}}
-          (.exists (io/file "/usr/lib/hadoop/lib/native"))
-          , (assoc :jvm-opts ["-Djava.library.path=/usr/lib/hadoop/lib/native"])))
+          (.exists (io/file native-path))
+          , (assoc :jvm-opts [(str "-Djava.library.path=" native-path)])))
 
 (defn inject-profile
   [project pname profile]
