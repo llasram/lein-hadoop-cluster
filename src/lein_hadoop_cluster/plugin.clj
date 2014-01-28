@@ -29,19 +29,21 @@
           , (assoc :jvm-opts [(str "-Djava.library.path=" native-path)])))
 
 (defn inject-profile
-  [project pname profile]
-  (-> (assoc-in project [:profiles pname] profile)
+  [project]
+  (-> project
+      (update-in [:profiles :hadoop-system]
+                 (fnil #'lcp/meta-merge {}) hadoop-cluster-profile)
+      (cond-> (not (get-in project [:profiles :hadoop-cluster]))
+              (assoc-in [:profiles :hadoop-cluster] [:hadoop-system]))
+      (assoc-in [:aliases "hadoop-repl"]
+                ["with-profile" "-provided,+hadoop-cluster" "repl"])
       (assoc ::hadoop-cluster true)))
 
 (defn middleware
   [project]
   (if (::hadoop-cluster project)
     project
-    (let [pwop (:without-profiles (meta project) project)
-          profiles (:profiles pwop {})
-          pname (:hadoop-cluster-profile pwop :hadoop-cluster)
-          profile (->> (get profiles pname {})
-                       (#'lcp/meta-merge hadoop-cluster-profile))]
-      (with-meta (inject-profile project pname profile)
+    (let [pwop (:without-profiles (meta project) project)]
+      (with-meta (inject-profile project)
         (assoc (meta project)
-          :without-profiles (inject-profile pwop pname profile))))))
+          :without-profiles (inject-profile pwop))))))
