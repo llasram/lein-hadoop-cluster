@@ -13,7 +13,27 @@ lein-hadoop-cluster 0.1.0`.
 Then you can run tasks under the `hadoop-cluster` profile, or otherwise use the
 profile to access the live cluster task/JVM configuration.  For example:
 
-    $ lein with-profile -provided,+hadoop-cluster repl
+    $ lein with-profile hadoop-cluster repl
+
+The `repl` command is the primary intended use of the plugin, and so the above
+is actually provided as the `hadoop-repl` alias:
+
+    $ lein hadoop-repl
+
+Internally, the plugin defines and makes use of three Leiningen profiles:
+
+- `hadoop-cluster` – Intended as a replacement for `default`.  By default
+  includes the profiles `system`, `base`, `dev`, `user`, `hadoop-system`, and
+  `hadoop-user`.  May be defined by the user in `project.clj` instead.
+- `hadoop-user` – User hook for easily adding e.g. additional cluster-Hadoop
+  version-specific dependencies.  By default empty.
+- `hadoop-system` – Additive profile containing the actual configuration
+  necessary to access the system Hadoop installation.
+
+Additionally, the plugin expects that project files will specify all their
+Hadoop-provided dependencies via the `provided` profile.  Placing them in
+e.g. `dev` instead will result in them appearing on the `hadoop-cluster` profile
+classpath, and before the system Hadoop.
 
 ## License
 
