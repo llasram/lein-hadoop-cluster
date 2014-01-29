@@ -1,8 +1,8 @@
 # lein-hadoop-cluster
 
 A Leiningen plugin for running tasks against a live Hadoop cluster.  Adds a
-profile named `hadoop-cluster` (or a user-provided name) which includes the
-correct class path etc for the currently-configured Hadoop cluster.
+profile named `hadoop-cluster` which includes the correct class path etc for the
+currently-configured Hadoop cluster.
 
 ## Usage
 
