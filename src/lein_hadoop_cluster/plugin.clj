@@ -4,6 +4,8 @@
            [leiningen.core.project :as lcp]))
 
 (def hadoop-dependencies
+  "Hadoop-provided dependencies which can cause problems if doubled up on the
+classpath."
   '[org.apache.hadoop/hadoop-common
     org.apache.hadoop/hadoop-client
     org.apache.hadoop/hadoop-core
@@ -13,6 +15,7 @@
     log4j/log4j])
 
 (def hadoop-classpaths
+  "System Hadoop installation classpath components."
   (-> (sh "hadoop" "classpath")
       :out (.split ":") (->> (map #(.trim %)))
       vec))
@@ -21,7 +24,8 @@
   "Most common (Linux) path for native dependencies."
   "/usr/lib/hadoop/lib/native")
 
-(def hadoop-cluster-profile
+(def hadoop-system-profile
+  "Profile map for the `hadoop-system` profile."
   (cond-> {:exclusions hadoop-dependencies
            :plugins '[[lein-extend-cp "0.1.0"]]
            :lein-extend-cp {:paths hadoop-classpaths}}
@@ -32,7 +36,7 @@
   [project]
   (-> project
       (update-in [:profiles :hadoop-system]
-                 (fnil #'lcp/meta-merge {}) hadoop-cluster-profile)
+                 (fnil #'lcp/meta-merge {}) hadoop-system-profile)
       (cond-> (not (get-in project [:profiles :hadoop-cluster]))
               , (assoc-in [:profiles :hadoop-cluster]
                           [:base :system :user :dev
