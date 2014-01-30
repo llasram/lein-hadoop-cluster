@@ -1,7 +1,8 @@
 (ns lein-hadoop-cluster.plugin
   (require [clojure.java.io :as io]
            [clojure.java.shell :refer [sh]]
-           [leiningen.core.project :as lcp]))
+           [leiningen.core.project :as lcp]
+           [leiningen.core.main :as main]))
 
 (def hadoop-dependencies
   "Hadoop-provided dependencies which can cause problems if doubled up on the
@@ -16,13 +17,18 @@ classpath."
 
 (def hadoop-classpaths
   "System Hadoop installation classpath components."
-  (-> (sh "hadoop" "classpath")
-      :out (.split ":") (->> (map #(.trim %)))
-      vec))
+  (try
+    (-> (sh "hadoop" "classpath")
+        :out (.split ":") (->> (map #(.trim %)))
+        vec)
+    (catch Exception _
+      (main/info "lein-hadoop-cluster: Error running `hadoop classpath`.")
+      [])))
 
 (def native-path
   "Most common (Linux) path for native dependencies."
-  "/usr/lib/hadoop/lib/native")
+  (let [hadoop-home (or (System/getenv "HADOOP_HOME") "/usr/lib/hadoop")]
+    (str (io/file hadoop-home "lib/native"))))
 
 (def hadoop-system-profile
   "Profile map for the `hadoop-system` profile."
