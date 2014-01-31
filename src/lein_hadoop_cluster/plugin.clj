@@ -25,10 +25,20 @@ classpath."
       (main/info "lein-hadoop-cluster: Error running `hadoop classpath`.")
       [])))
 
+(def hadoop-checknative
+  "Native library path determined via `hadoop checknative`."
+  (try
+    (->> (sh "hadoop" "checknative") :out
+         (re-find #"(?m) (/.*libhadoop.*)$") second
+         io/file .getParent)
+    (catch Exception _
+      nil)))
+
 (def native-path
   "Most common (Linux) path for native dependencies."
-  (let [hadoop-home (or (System/getenv "HADOOP_HOME") "/usr/lib/hadoop")]
-    (str (io/file hadoop-home "lib/native"))))
+  (or hadoop-checknative
+      (let [hadoop-home (or (System/getenv "HADOOP_HOME") "/usr/lib/hadoop")]
+        (str (io/file hadoop-home "lib/native")))))
 
 (def hadoop-system-profile
   "Profile map for the `hadoop-system` profile."
