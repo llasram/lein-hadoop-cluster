@@ -6,9 +6,9 @@ currently-configured Hadoop cluster.
 
 ## Usage
 
-Put `[lein-hadoop-cluster "0.1.1"]` into the `:plugins` vector of your `:user`
+Put `[lein-hadoop-cluster "0.1.2"]` into the `:plugins` vector of your `:user`
 profile, or if you are on Leiningen 1.x do `lein plugin install
-lein-hadoop-cluster 0.1.1`.
+lein-hadoop-cluster 0.1.2`.
 
 Then you can run tasks under the `hadoop-cluster` profile, or otherwise use the
 profile to access the live cluster task/JVM configuration.  For example:
