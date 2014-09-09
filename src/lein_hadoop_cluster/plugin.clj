@@ -25,6 +25,16 @@ classpath."
       (main/info "lein-hadoop-cluster: Error running `hadoop classpath`.")
       [])))
 
+(def hbase-classpaths
+  "System HBase installation classpath components."
+  (try
+    (-> (sh "hbase" "classpath")
+        :out (.split ":") (->> (map #(.trim %)))
+        vec)
+    (catch Exception _
+      (main/info "lein-hadoop-cluster: Error running `hbase classpath`.")
+      [])))
+
 (def hadoop-checknative
   "Native library path determined via `hadoop checknative`."
   (try
@@ -44,7 +54,7 @@ classpath."
   "Profile map for the `hadoop-system` profile."
   (cond-> {:exclusions hadoop-dependencies
            :plugins '[[lein-extend-cp "0.1.0"]]
-           :lein-extend-cp {:paths hadoop-classpaths}}
+           :lein-extend-cp {:paths (concat hadoop-classpaths hbase-classpaths)}}
           (.exists (io/file native-path))
           , (assoc :jvm-opts [(str "-Djava.library.path=" native-path)])))
 
