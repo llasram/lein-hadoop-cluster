@@ -1,4 +1,4 @@
-(defproject lein-hadoop-cluster "0.1.3-SNAPSHOT"
+(defproject lein-hadoop-cluster "0.1.3"
   :description "Run Leiningen tasks against a live Hadoop cluster."
   :url "http://github.com/llasram/lein-hadoop-cluster"
   :license {:name "Eclipse Public License"
