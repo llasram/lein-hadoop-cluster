@@ -15,34 +15,30 @@ classpath."
     org.slf4j/slf4j-log4j12
     log4j/log4j])
 
+(defmacro ignore-errors
+  "Returns the result of evaluating body, or nil if it throws an exception."
+  [& body] `(try ~@body (catch java.lang.Exception _# nil)))
+
 (def hadoop-classpaths
   "System Hadoop installation classpath components."
-  (try
-    (-> (sh "hadoop" "classpath")
-        :out (.split ":") (->> (map #(.trim %)))
-        vec)
-    (catch Exception _
-      (main/info "lein-hadoop-cluster: Error running `hadoop classpath`.")
-      [])))
+  (let [{:keys [out exit]} (ignore-errors (sh "hadoop" "classpath"))]
+    (if (and out (zero? exit))
+      (map #(.trim ^String %) (.split ^String out ":"))
+      (main/debug "error running `hadoop classpath`"))))
 
 (def hbase-classpaths
   "System HBase installation classpath components."
-  (try
-    (-> (sh "hbase" "classpath")
-        :out (.split ":") (->> (map #(.trim %)))
-        vec)
-    (catch Exception _
-      (main/info "lein-hadoop-cluster: Error running `hbase classpath`.")
-      [])))
+  (let [{:keys [out exit]} (ignore-errors (sh "hbase" "classpath"))]
+    (if (and out (zero? exit))
+      (map #(.trim ^String %) (.split ^String out ":"))
+      (main/debug "error running `hbase classpath`"))))
 
 (def hadoop-checknative
   "Native library path determined via `hadoop checknative`."
-  (try
-    (->> (sh "hadoop" "checknative") :out
-         (re-find #"(?m) (/.*libhadoop.*)$") second
-         io/file .getParent)
-    (catch Exception _
-      nil)))
+  (let [{:keys [out exit]} (ignore-errors (sh "hadoop" "checknative"))]
+    (if (and out (zero? exit))
+      (->> out (re-find #"(?m) (/.*libhadoop.*)$") second io/file .getParent)
+      (main/debug "error running `hadoop checknative`"))))
 
 (def native-path
   "Most common (Linux) path for native dependencies."
