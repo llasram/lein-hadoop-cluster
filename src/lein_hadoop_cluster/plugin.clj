@@ -1,5 +1,6 @@
 (ns lein-hadoop-cluster.plugin
-  (require [clojure.java.io :as io]
+  (require [clojure.string :as str]
+           [clojure.java.io :as io]
            [clojure.java.shell :refer [sh]]
            [leiningen.core.project :as lcp]
            [leiningen.core.main :as main]))
@@ -23,14 +24,14 @@ classpath."
   "System Hadoop installation classpath components."
   (let [{:keys [out exit]} (ignore-errors (sh "hadoop" "classpath"))]
     (if (and out (zero? exit))
-      (map #(.trim ^String %) (.split ^String out ":"))
+      (remove str/blank? (map #(.trim ^String %) (.split ^String out ":")))
       (main/debug "error running `hadoop classpath`"))))
 
 (def hbase-classpaths
   "System HBase installation classpath components."
   (let [{:keys [out exit]} (ignore-errors (sh "hbase" "classpath"))]
     (if (and out (zero? exit))
-      (map #(.trim ^String %) (.split ^String out ":"))
+      (remove str/blank? (map #(.trim ^String %) (.split ^String out ":")))
       (main/debug "error running `hbase classpath`"))))
 
 (def hadoop-checknative
@@ -53,27 +54,3 @@ classpath."
            :lein-extend-cp {:paths (concat hadoop-classpaths hbase-classpaths)}}
           (.exists (io/file native-path))
           , (assoc :jvm-opts [(str "-Djava.library.path=" native-path)])))
-
-(defn inject-profile
-  [project]
-  (-> project
-      (update-in [:profiles :hadoop-system]
-                 (fnil #'lcp/meta-merge {}) hadoop-system-profile)
-      (cond-> (not (get-in project [:profiles :hadoop-cluster]))
-              , (assoc-in [:profiles :hadoop-cluster]
-                          [:base :system :user :dev
-                           :hadoop-system :hadoop-user])
-              (not (get-in project [:profiles :hadoop-user]))
-              , (assoc-in [:profiles :hadoop-user] {}))
-      (assoc-in [:aliases "hadoop-repl"]
-                ["with-profile" "hadoop-cluster" "repl"])
-      (assoc ::hadoop-cluster true)))
-
-(defn middleware
-  [project]
-  (if (::hadoop-cluster project)
-    project
-    (let [pwop (:without-profiles (meta project) project)]
-      (with-meta (inject-profile project)
-        (assoc (meta project)
-          :without-profiles (inject-profile pwop))))))
