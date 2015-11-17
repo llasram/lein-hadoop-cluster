@@ -20,7 +20,7 @@ With the plugin added to the project, you can run tasks under the
 `plugin.lein-hadoop-cluster/hadoop-cluster` profile, or otherwise use the
 profile to access the live cluster task/JVM configuration.  For example:
 
-    $ lein with-profile plugin.lein-hadoop-cluster/hadoop-cluster trampoline repl
+    $ lein with-profile plugin.lein-hadoop-cluster/default trampoline repl
 
 Internally, the plugin defines and makes use of two Leiningen profiles (prefixed
 with `plugin.lein-hadoop-cluster/`):
