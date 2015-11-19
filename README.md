@@ -17,13 +17,12 @@ profile-level plugin e.g. in your `:user` profile.  It must be a top-level
 plugin in each project where you intend to use the plugin.
 
 With the plugin added to the project, you can run tasks under the
-`plugin.lein-hadoop-cluster/hadoop-cluster` profile, or otherwise use the
-profile to access the live cluster task/JVM configuration.  For example:
+`plugin.lein-hadoop-cluster/default` profile, or otherwise use the profile to
+access the live cluster task/JVM configuration.  For example:
 
     $ lein with-profile plugin.lein-hadoop-cluster/default trampoline repl
 
-Internally, the plugin defines and makes use of two Leiningen profiles (prefixed
-with `plugin.lein-hadoop-cluster/`):
+Internally, the plugin defines and makes use of two Leiningen profiles:
 
 - `plugin.lein-hadoop-cluster/default` – Intended as a replacement for the
   top-level `default`.  By inncludes the profiles `system`, `base`, `dev`,
